@@ -1,0 +1,86 @@
+% [~,traj_order] = sort(metrics{1}.peakfreq,'descend');
+% traj_wt = data.model_sim{1}(traj_order,:);
+%
+% [~,traj_order] = sort(metrics{2}.peakfreq,'descend');
+% traj_tnfo = data.model_sim{2}(traj_order,:);
+%
+%       subplot(1,2,1)
+%         h=heatmap(traj_wt,'ColorMap',parula,'GridVisible','off','XLabel',{},'YLabel',{},'ColorLimits',[-0.001,0.25],...
+%             'Title',{'wt',sim_info.parameter_name{1},sim_info.parameter_name{2}});
+%
+%         subplot(1,2,2)
+%         h=heatmap(traj_tnfo,'ColorMap',parula,'GridVisible','off','XLabel',{},'YLabel',{},'ColorLimits',[-0.001,0.25],...
+%             'Title',{'tnfo',sim_info.parameter_name{1},sim_info.parameter_name{2}});
+
+    traj_wt = sim_data_tbl.trajectory(index_nuc_NFkB_wt,:);
+    [~,traj_order] = sort(max(traj_wt,[],2),'descend');
+    traj_wt = traj_wt(traj_order,:);
+    traj_wt = traj_wt(1:5:end,:);
+    traj_tnfo = sim_data_tbl.trajectory(index_nuc_NFkB_tnfo,:);
+    [~,traj_order] = sort(max(traj_tnfo,[],2),'descend');
+    traj_tnfo = traj_tnfo(traj_order,:);
+    traj_tnfo = traj_tnfo(1:5:end,:);
+    data.model_sim{1} =traj_wt(:,1:5:end);
+    data.model_sim{2}  = traj_tnfo(:,1:5:end);
+    
+pk_num = NaN(size(data.model_sim{1},1),2);
+osc_ratio = NaN(2,3);
+for i_genotype = 1:2
+    traj = data.model_sim{i_genotype};
+    for i_traj = 1:size(traj,1)
+        [pks,~] = findpeaks(traj(i_traj,:));
+        % plot(1:size(traj,2),traj(i_traj,:)); hold on
+        [trghs,~] = findpeaks(-traj(1,:));
+        trghs = -trghs;
+        
+        clear p2t
+        p2t(1:2:length(pks)*2) = pks;
+        p2t(2:2:length(trghs)*2) = trghs;
+        
+        pk_num(i_traj,i_genotype) = sum(abs(p2t(1:end-1) - p2t(2:end))>0.01) /2 ;
+    end
+    
+    for i_threshold =1:3
+        osc_ratio(i_genotype,i_threshold) = sum(pk_num(:,i_genotype) > i_threshold )/size(pk_num,1);
+    end
+end
+
+
+[~,traj_order] = sort(pk_num(:,1),'descend');
+traj_wt = data.model_sim{1}(traj_order,:);
+
+[~,traj_order] = sort(pk_num(:,2),'descend');
+traj_tnfo = data.model_sim{2}(traj_order,:);
+
+% figure(1)
+% subplot(1,2,1)
+% h1=heatmap(traj_wt,'ColorMap',parula,'GridVisible','off','XLabel',{},'YLabel',{},'ColorLimits',[-0.001,0.25],...
+%     'Title',{'wt',sim_info.parameter_name{1},sim_info.parameter_name{2}});
+% 
+% subplot(1,2,2)
+% h2=heatmap(traj_tnfo,'ColorMap',parula,'GridVisible','off','XLabel',{},'YLabel',{},'ColorLimits',[-0.001,0.25],...
+%     'Title',{'tnfo',sim_info.parameter_name{1},sim_info.parameter_name{2}});
+
+figure(2)
+
+for i_osratio = 1:size(osc_ratio,2)
+    
+        subplot(1,2,i_osratio)
+
+       b=bar(osc_ratio(i_osratio)*100);
+        %xlabel()
+        b.FaceColor = 'flat';
+        b.CData(1,:) = [0 0 1];
+        b.CData(2,:) = [1 0 0];
+        
+        ytickformat(gca, '%g%%');
+        grid on
+        ylabel('Osc ratio')
+        set(gca,'XTickLabel',{'WT','Tnf^{-/-}'})
+        set(gca,'fontsize',7,'fontweight','b')
+        
+        Set_figure_size
+        %         saveas(gcf,strcat('./',save_file_name,'_tnfr'),'epsc')
+        close
+
+
