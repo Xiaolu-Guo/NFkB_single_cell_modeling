@@ -77,7 +77,7 @@ end
 
 
 %% plot heatmap of sampling 
-% Figure S4A: tested 05/10/2024
+% Figure S3A: tested 05/10/2024
 if 1
     clear data_to_draw data metrics
     

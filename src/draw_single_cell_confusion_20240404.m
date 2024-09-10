@@ -1,4 +1,7 @@
-clear all
+function [] = draw_single_cell_confusion_20240404()
+% For Guo et al. Figure 7 S7: single-cell stimulus response specificity
+%
+% tested 05/15/2024, Matlab 2020a
 
 %% initializing do not copy this
 debug_or_not = 0;
@@ -100,135 +103,7 @@ if 1 %draw 5 ligand single ligand stim
             end
             
             
-            if 0 %transform into MI format
-                codon_single_cell_wt;
-                dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
-                dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
-                
-                
-                % {'TNF';'LPS';'CpG';'PolyIC';'Pam3CSK'}
-                %TNF-LPS, TNF-CpG, TNF-PIC ,TNF-P3C [1,2,3,4]
-                %LPS-CpG, LPS-PIC, LPS-P3C, [5,6,7]
-                %CpG-PIC, CpG-P3C, P3C-PIC,[8,9,10]
-                
-                %TNF-P3C, TNF-CpG, TNF-LPS, TNF-PIC [4,2,1,3]
-                %CpG-P3C, LPS-P3C, P3C-PIC,   [9,7,10]
-                %LPS-CpG, CpG-PIC, LPS-PIC   [5,8,6]
-                
-                dist_mat_wt = dist_mat_wt(:,[4,2,1,3,9,7,10,5,8,6]);
-                dist_mat_IkBo = dist_mat_IkBo(:,[4,2,1,3,9,7,10,5,8,6]);
-
-                
-                ligand_all = {'TNF',  'LPS', 'CpG', 'PolyIC', 'Pam3CSK'};
-                % 1 5 3 2 4
-                ligand_pair_index = [1,5;1,3;1,2;1,4;5,3;5,2;5,4;3,2;3,4;2,4];
-                
-                codon_list = {'Speed','PeakAmplitude','Duration','TotalActivity','EarlyVsLate','OscVsNonOsc'};
-                
-                remove_confused_cells = 1;
-                for i_ligand_pair = 1:size(ligand_pair_index,1)
-                    clear nfkb
-                    for i_ligand_ind = 1:size(ligand_pair_index ,2)
-                        i_ligand = ligand_pair_index(i_ligand_pair,i_ligand_ind);
-                        nfkb(i_ligand_ind).sc_metrics = struct();
-                        
-                        for i_codon =1:length(codon_list)
-                            nfkb(i_ligand_ind).id = ligand_all{i_ligand};
-                            nfkb(i_ligand_ind).ids = ligand_all(ligand_pair_index(i_ligand_pair,:));
-                            
-                            codon_mat = zeros(length(codon_single_cell_wt),1);
-                            for i_cell = 1:length(codon_single_cell_wt)
-                            codon_mat(i_cell) = codon_single_cell_wt{i_cell}(i_ligand,i_codon);
-                            end
-                            
-                            if remove_confused_cells
-                                codon_mat = codon_mat(dist_mat_wt(:,i_ligand_pair)>1);
-                            end
-                            
-                            nfkb(i_ligand_ind).sc_metrics.(codon_list{i_codon}) = codon_mat;
-                                
-  
-                        end
-                        
-                    end
-                    
-                    if remove_confused_cells
-                        save(strcat('mutual_info_format_scSRS_wt_remove_conf_cells_',ligand_all{ligand_pair_index(i_ligand_pair,1)},...
-                            '_',ligand_all{ligand_pair_index(i_ligand_pair,2)},'.mat'),'nfkb');
-                    else
-                        save(strcat('mutual_info_format_scSRS_wt_',ligand_all{ligand_pair_index(i_ligand_pair,1)},...
-                            '_',ligand_all{ligand_pair_index(i_ligand_pair,2)},'.mat'),'nfkb');
-                    end
-                end
-                
-            end
-            
-            if 1 %transform into MI format, all 5 ligands
-                codon_single_cell_wt;
-                dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
-                dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
-                
-                
-                % {'TNF';'LPS';'CpG';'PolyIC';'Pam3CSK'}
-                %TNF-LPS, TNF-CpG, TNF-PIC ,TNF-P3C [1,2,3,4]
-                %LPS-CpG, LPS-PIC, LPS-P3C, [5,6,7]
-                %CpG-PIC, CpG-P3C, P3C-PIC,[8,9,10]
-                
-                %TNF-P3C, TNF-CpG, TNF-LPS, TNF-PIC [4,2,1,3]
-                %CpG-P3C, LPS-P3C, P3C-PIC,   [9,7,10]
-                %LPS-CpG, CpG-PIC, LPS-PIC   [5,8,6]
-                
-                dist_mat_wt = dist_mat_wt(:,[4,2,1,3,9,7,10,5,8,6]);
-                dist_mat_IkBo = dist_mat_IkBo(:,[4,2,1,3,9,7,10,5,8,6]);
-                
-                conf_mat_wt = cell2mat(cellfun(@(x) confusion_mat(x,1.5), codon_single_cell_wt, 'UniformOutput', false));
-                conf_mat_IkBo = cell2mat(cellfun(@(x) confusion_mat(x,1.5), codon_single_cell_IkBo, 'UniformOutput', false));
-%                 conf_ligand = sum(conf_mat_wt)/1000;
-                index = sum(conf_mat_wt,2)==0;
-
-                
-                ligand_all = {'TNF',  'LPS', 'CpG', 'PolyIC', 'Pam3CSK'};
-                % 1 5 3 2 4
-                ligand_pair_index = [1,5;1,3;1,2;1,4;5,3;5,2;5,4;3,2;3,4;2,4];
-                
-                codon_list = {'Speed','PeakAmplitude','Duration','TotalActivity','EarlyVsLate','OscVsNonOsc'};
-                
-                remove_confused_cells = 0;
-                for i_ligand_pair = 1:size(ligand_pair_index,1)
-                    clear nfkb
-                    for i_ligand = 1:5
-                        nfkb(i_ligand).sc_metrics = struct();
-                        
-                        for i_codon =1:length(codon_list)
-                            nfkb(i_ligand).id = ligand_all{i_ligand};
-                            nfkb(i_ligand).ids = ligand_all;
-                            
-                            codon_mat = zeros(length(codon_single_cell_wt),1);
-                            for i_cell = 1:length(codon_single_cell_wt)
-                                codon_mat(i_cell) = codon_single_cell_wt{i_cell}(i_ligand,i_codon);
-                            end
-                            
-                            if remove_confused_cells
-                                codon_mat = codon_mat(index);
-                            end
-                            
-                            nfkb(i_ligand).sc_metrics.(codon_list{i_codon}) = codon_mat;
-                                
-  
-                        end
-                        
-                    end
-                    
-                    if remove_confused_cells
-                        save(strcat('mutual_info_format_scSRS_wt_remove_conf_cells_5ligand_1p5.mat'),'nfkb');
-                    else
-                        save(strcat('mutual_info_format_scSRS_wt_5ligand_1p5.mat'),'nfkb');
-                    end
-                end
-                
-            end
-            
-            if 0
+            if 1
                 dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
                 dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
                 
@@ -244,16 +119,15 @@ if 1 %draw 5 ligand single ligand stim
                 dist_mat_wt = dist_mat_wt(:,[1,2,4,3,5,7,9,6,8,10]);
                 dist_mat_IkBo = dist_mat_IkBo(:,[1,2,4,3,5,7,9,6,8,10]);
                 
-                
-                
-                if 0 % transforming into ML format for learning the para vs SRS
+                if 0 % For disucssion ML learn para-scSRS accuracy, tested 05/15/2024
+                    % transforming into ML format for learning the para vs SRS
                     bacterial_ligand_index = [1,2,3,6,7,8,9,10,11,15,16];
                     
                     ligand_pair_index_vec = [5,6,7];
                     %LPS-CpG, LPS-P3C, CpG-P3C
                     data_name = {'LPS_CpG','LPS_P3C','CpG_P3C'};
                     
-                    data_save_path = './python/';
+                    data_save_path = '../raw_data2023/ML_para_scSRS/';
                     for i_ligand_pair_index_vec = 1:length(ligand_pair_index_vec)
                         
                         para_mat = para_mat_wt(1:1000,bacterial_ligand_index);
@@ -264,7 +138,7 @@ if 1 %draw 5 ligand single ligand stim
                     end
                 end
                 
-                if 0
+                if 0 % Figure 7C: tested 05/15/2024
                     figure(1)
                     paperpos=[0,0,250,100]*1.5;
                     papersize=[250 100]*1.5;
@@ -290,14 +164,15 @@ if 1 %draw 5 ligand single ligand stim
                         plot([i_x,i_x],[0,5],'--','Color','k');hold on
                     end
                     set(gca,'fontsize',14,'fontname','Arial');
-                    % saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_exp_',vers_savefig),'epsc');
+                    %%%% saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_exp_',vers_savefig),'epsc');
+                    
                     saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_exp_10pert_med',vers_savefig),'epsc');
                     
                     close
                     
                 end
                 
-                if 0
+                if 0 % Figure S7E: tested 05/15/2024
                     figure(1)
                     paperpos=[0,0,250,100]*1.5;
                     papersize=[250 100]*1.5;
@@ -323,7 +198,8 @@ if 1 %draw 5 ligand single ligand stim
                         plot([i_x,i_x],[0,5],'--','Color','k');hold on
                     end
                     set(gca,'fontsize',14,'fontname','Arial');
-                    % saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_exp_',vers_savefig),'epsc');
+                    %%%% saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_exp_',vers_savefig),'epsc');
+                    
                     saveas(gcf,strcat(fig_save_path,'PairRMSD_distrib_wt_exp_10pert_med',vers_savefig),'epsc');
                     
                     close
@@ -331,7 +207,8 @@ if 1 %draw 5 ligand single ligand stim
                 end
             end
             
-            if 0 % ligand_index = [1,5,3,2,4]
+            if 0  % figure 7F 7I : tested 05/15/2024
+                % ligand_index = [1,5,3,2,4]
                 
                 dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
                 dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
@@ -361,15 +238,43 @@ if 1 %draw 5 ligand single ligand stim
             end
             
             
-            if 1
+            if 0  % figure 7F 7I : Different threshold
+                % ligand_index = [1,5,3,2,4]
+                
+                dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
+                dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
+                
                 
                 % {'TNF';'LPS';'CpG';'PolyIC';'Pam3CSK'}
                 %TNF-LPS, TNF-CpG, TNF-PIC ,TNF-P3C [1,2,3,4]
                 %LPS-CpG, LPS-PIC, LPS-P3C, [5,6,7]
                 %CpG-PIC, CpG-P3C, P3C-PIC,[8,9,10]
                 
+                %TNF-P3C, TNF-CpG, TNF-LPS, TNF-PIC [4,2,1,3]
+                %CpG-P3C, LPS-P3C, P3C-PIC,   [9,7,10]
+                %LPS-CpG, CpG-PIC, LPS-PIC   [5,8,6]
                 
+                dist_mat_wt = dist_mat_wt(:,[4,2,1,3,9,7,10,5,8,6]);
+                dist_mat_IkBo = dist_mat_IkBo(:,[4,2,1,3,9,7,10,5,8,6]);
+                threshold_new = 1.5; %0.8 1.2
+                conf_mat = sum(dist_mat_wt < threshold_new,1)/1000;
+                fig = draw_conf_mat(conf_mat,ligand_index,[0,40]);
+                saveas(fig,strcat(savepath,'Confusion_mat_wt','_',replace(num2str(threshold_new),'.','p')),'epsc');%_20cells
+                close
                 
+                conf_mat = sum(dist_mat_IkBo < threshold_new,1)/1000;
+                fig = draw_conf_mat(conf_mat,ligand_index,[0,40]);
+                saveas(fig,strcat(savepath,'Confusion_mat_IkBo_p25x','_',replace(num2str(threshold_new),'.','p')),'epsc');%_20cells
+                close
+            end
+            
+            
+            if 1
+                
+                % {'TNF';'LPS';'CpG';'PolyIC';'Pam3CSK'}
+                %TNF-LPS, TNF-CpG, TNF-PIC ,TNF-P3C [1,2,3,4]
+                %LPS-CpG, LPS-PIC, LPS-P3C, [5,6,7]
+                %CpG-PIC, CpG-P3C, P3C-PIC,[8,9,10]
                 
                 dist_mat_wt = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_wt, 'UniformOutput', false));
                 dist_mat_IkBo = cell2mat(cellfun(@(x) dist_mat(x), codon_single_cell_IkBo, 'UniformOutput', false));
@@ -388,147 +293,8 @@ if 1 %draw 5 ligand single ligand stim
                 % 805, RMSD approx 0.5; 550, RMSD approx 1.5
                 
                 
-                
-                if 0
-                    
-                    colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
-                        ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
-                    
-                    [fig1,fig2,fig3,col_ord] = hierarchical_row_column_plot_0404(dist_mat_wt,[0,5],colormap_mat,conf_pairs);
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_rows'),'epsc');%_20cells
-                    close
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_columns'),'epsc');%_20cells
-                    close
-                    
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    [fig1,fig2,fig3] = hierarchical_row_column_plot_0404(dist_mat_IkBo,[0,5],colormap_mat,conf_pairs,col_ord);
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_rows'),'epsc');%_20cells
-                    close
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_columns'),'epsc');%_20cells
-                    close
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    
-                end
-                
-                if 0 % 04/16/2024
-                    
-                    colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
-                        ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
-                    
-                    
-                    [fig1,fig2,fig3,col_ord] = hierarchical_row_column_plot_0411(dist_mat_wt,[0,5],colormap_mat,conf_pairs);
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_rows_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_columns_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_heatmaps_0416'),'epsc');%_20cells
-                    close
-                    
-                    [fig1,fig2,fig3] = hierarchical_row_column_plot_0411(dist_mat_IkBo,[0,5],colormap_mat,conf_pairs,col_ord);
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_rows_0416'),'epsc');%_20cells
-                    close
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_columns_0416'),'epsc');%_20cells
-                    close
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_heatmaps_0416'),'epsc');%_20cells
-                    close
-                    
-                    
-                end
-                
-                if 0 % 04/16/2024: heatmap black and white
-                    
-                    colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
-                        ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
-                    
-                    colormap_mat = [0,0,0
-                        1,1,1];
-                    
-                    [fig1,fig2,fig3,col_ord] = hierarchical_row_column_plot_kw_0411(dist_mat_wt,[0,1],colormap_mat,conf_pairs);
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_rows_kw_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_columns_kw_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_heatmaps_kw_0416'),'epsc');%_20cells
-                    close
-                    
-                    [fig1,fig2,fig3] = hierarchical_row_column_plot_kw_0411(dist_mat_IkBo,[0,1],colormap_mat,conf_pairs,col_ord);
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_rows_kw_0416'),'epsc');%_20cells
-                    close
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_columns_kw_0416'),'epsc');%_20cells
-                    close
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_heatmaps_kw_0416'),'epsc');%_20cells
-                    close
-                    
-                    
-                end
-                
-                if 0 % 04/16/2024: heatmap  only conf pairs>=2
-                    
-                    colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
-                        ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
-                    
-                    dist_mat_wt_plot = dist_mat_wt(sum(dist_mat_wt<=1,2)>=2,:);
-                    [fig1,fig2,fig3,col_ord] = hierarchical_row_column_plot_0411(dist_mat_wt_plot,[0,5],colormap_mat,conf_pairs);
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_rows_conf_2andmorepairs_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster_columns_conf_2andmorepairs_0416'),'epsc');%_20cells
-                    close
-                    
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_heatmaps_conf_2andmorepairs_0416'),'epsc');%_20cells
-                    close
-                    
-                    dist_mat_IkBo_plot = dist_mat_IkBo(sum(dist_mat_IkBo<=1,2)>=2,:);
-                    
-                    [fig1,fig2,fig3] = hierarchical_row_column_plot_0411(dist_mat_IkBo_plot,[0,5],colormap_mat,conf_pairs,col_ord);
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_conf_2andmorepairs_rows_0416'),'epsc');%_20cells
-                    close
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster_columns_conf_2andmorepairs_0416'),'epsc');%_20cells
-                    close
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_heatmaps_conf_2andmorepairs_0416'),'epsc');%_20cells
-                    close
-                    
-                    
-                end
-                
-                if 0 % 04/16/2024: heatmap black and white,  only conf pairs>=2
+                if 1 % figure 7G 7J : tested 05/15/2024
+                    % 04/16/2024: heatmap black and white,  only conf pairs>=2
                     
                     colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
                         ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
@@ -564,82 +330,64 @@ if 1 %draw 5 ligand single ligand stim
                     fig3
                     saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_heatmaps_conf_2andmorepairs_kw_0416'),'epsc');%_20cells
                     close
-                    
-                    
                 end
                 
-                
-                
-                if 0 % kmeans heatmaps to be deleted
+                %
+                if 1 % figure 7G 7J : different threshold tested 05/15/2024
+                    % 04/16/2024: heatmap black and white,  only conf pairs>=2
                     
                     colormap_mat = [linspace(0,1,11)',linspace(0,1,11)',ones(11,1)
                         ones(40,1),linspace(39/40,0,40)',linspace(39/40,0,40)'];
                     
-                    [fig3,col_ord] = kmeans_row_column_cluster(dist_mat_wt,[0,5],colormap_mat,conf_pairs,[1,2,4,3,5,7,9,6,8,10]);
+                    colormap_mat = [0,0,0
+                        1,1,1];
                     
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_kmeans_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    [fig3] = kmeans_row_column_cluster(dist_mat_IkBo,[0,5],colormap_mat,conf_pairs,[1,2,4,3,5,7,9,6,8,10],[2,1,3,5,4]);
-                    
-                    fig3
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_kmeans_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    
+                    %                 conf_mat = sum(dist_mat_wt < threshold_new,1)/1000;
+                    %                 fig = draw_conf_mat(conf_mat,ligand_index,[0,40]);
+                    %                 saveas(fig,strcat(savepath,'Confusion_mat_wt','_',replace(num2str(threshold_new),'.','p')),'epsc');%_20cells
+                    %                 close
+                    threshold_vec = {0.5,0.8,1.2,1.5};
+                    for i_thresh = 1:4
+                        threshold_new = threshold_vec{i_thresh}; %0.8 1.2
+                        
+                        dist_mat_wt_plot = dist_mat_wt(sum(dist_mat_wt<=threshold_new,2)>=2,:);
+                        [fig1,fig2,fig3,col_ord] = hierarchical_row_column_plot_diff_thresh_kw_0618(dist_mat_wt_plot,threshold_new,[0,1],colormap_mat,conf_pairs,col_ord);
+                        
+                        fig1
+                        saveas(gcf,strcat(savepath,'Confusion_pairs_wt_hcluster_rows_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        close
+                        
+                        fig2
+                        saveas(gcf,strcat(savepath,'Confusion_pairs_wt_hcluster_columns_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        close
+                        
+                        fig3
+                        saveas(gcf,strcat(savepath,'Confusion_pairs_wt_hheatmaps_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        close
+                        
+                        %                     dist_mat_IkBo_plot = dist_mat_IkBo(sum(dist_mat_IkBo<=threshold_new,2)>=2,:);
+                        %
+                        %                     [fig1,fig2,fig3] = hierarchical_row_column_plot_diff_thresh_kw_0618(dist_mat_IkBo_plot,threshold_new,[0,1],colormap_mat,conf_pairs,col_ord);
+                        %                     fig1
+                        %                     saveas(gcf,strcat(savepath,'Confusion_pairs_IkBs_hcluster_rows_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        %                     close
+                        %
+                        %                     fig2
+                        %                     saveas(gcf,strcat(savepath,'Confusion_pairs_IkBs_hcluster_columns_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        %                     close
+                        %
+                        %                     fig3
+                        %                     saveas(gcf,strcat(savepath,'Confusion_pairs_IkBs_hheatmaps_conf_2andmorepairs_',replace(num2str(threshold_new),'.','p'),'_0619'),'epsc');%_20cells
+                        %                     close
+                    end
                 end
                 
-                if 0 % representative for low and high l2 distance
-                    figure(1)
-                    paperpos=[0,0,120,100];
-                    papersize=[120 100];
-                    draw_pos=[10,10,100,90];
-                    set(gcf, 'PaperUnits','points')
-                    set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',draw_pos)
-                    plot(0:1/12:8,metrics{6}.time_series(805,:),'b','LineWidth',1.5); hold on
-                    plot(0:1/12:8,metrics{7}.time_series(805,:),'r','LineWidth',1.5)
-                    xticks(0:2:8)
-                    xlim([0,8])
-                    xticklabels('')
-                    yticks(0:0.1:0.4)
-                    ylim([0,0.4])
-                    yticklabels('')
-                    saveas(gcf,strcat(savepath,'representative_low_Euclidean'),'epsc');%_20cells
-                    close
+                if 0  % Figure 7D: tested 05/15/2024
+                    % representative for low and high l2 distance
                     
-                    figure(2)
-                    paperpos=[0,0,120,100];
-                    papersize=[120 100];
-                    draw_pos=[10,10,100,90];
-                    set(gcf, 'PaperUnits','points')
-                    set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',draw_pos)
-                    plot(0:1/12:8,metrics{6}.time_series(578,:),'b','LineWidth',1.5); hold on
-                    plot(0:1/12:8,metrics{7}.time_series(578,:),'r','LineWidth',1.5)
-                    xticks(0:2:8)
-                    xlim([0,8])
-                    ylim([0,0.4])
-                    xticklabels('')
-                    yticks(0:0.1:0.4)
-                    yticklabels('')
-                    saveas(gcf,strcat(savepath,'representative_high_Euclidean'),'epsc');%_20cells
-                    close
-                end
-                
-                if 0 % representative for low and high l2 distance
+                    % 41, PIC vs Pam, l2 = 0.5
+                    % 966, PIC vs Pam, l2 = 1.5
                     
-                    % delete this part before publication
-                    % 31,41, PIC vs Pam, l2 = 0.5
-                    % 871, PIC vs Pam, l2 = 1.5 [222;704;871;127;577]
-                    % [A,ia] = sort(dist_mat_wt(:,end))
-                    %                 idx_vec = [871;127;577;976;242;154;966;498];
-                    %                 for i_idx = 1:length(idx_vec)
-                    %                     figure(i_idx)
-                    %                     plot(0:1/12:8,metrics{9}.time_series(idx_vec(i_idx),:),'b','LineWidth',1.5); hold on
-                    %                     plot(0:1/12:8,metrics{10}.time_series(idx_vec(i_idx),:),'r','LineWidth',1.5)
-                    %                     xlim([0,8])
-                    %                     ylim([0,0.4])
-                    %                 end
                     
                     figure(1)
                     paperpos=[0,0,120,100];
@@ -675,73 +423,7 @@ if 1 %draw 5 ligand single ligand stim
                     saveas(gcf,strcat(savepath,'representative_high_Euclidean_PIC_P3C'),'epsc');%_20cells
                     close
                     
-                    figure(2)
-                    paperpos=[0,0,120,100];
-                    papersize=[120 100];
-                    draw_pos=[10,10,100,90];
-                    set(gcf, 'PaperUnits','points')
-                    set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',draw_pos)
-                    plot(0:1/12:8,metrics{9}.time_series(498,:),'b','LineWidth',1.5); hold on
-                    plot(0:1/12:8,metrics{10}.time_series(498,:),'r','LineWidth',1.5)
-                    xticks(0:2:8)
-                    xlim([0,8])
-                    ylim([0,0.2])
-                    xticklabels('')
-                    yticks(0:0.05:0.2)
-                    yticklabels('')
-                    saveas(gcf,strcat(savepath,'representative_high_Euclidean_PIC_P3C_2'),'epsc');%_20cells
-                    close
                 end
-                
-                if 0
-                    
-                    [fig1,fig2] = hierarchical_plots(dist_mat_wt);
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_hierarchical_cluster'),'epsc');%_20cells
-                    close
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_wt_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    
-                    [fig1,fig2] = hierarchical_plots(dist_mat_IkBo);
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_hierarchical_cluster'),'epsc');%_20cells
-                    close
-                    
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_RMSD_IkBs_heatmaps'),'epsc');%_20cells
-                    close
-                end
-                
-                
-                if 0
-                    RMSD_threshold = 1;
-                    conf_mat_wt = cell2mat(cellfun(@(x) confusion_mat(x,RMSD_threshold), codon_single_cell_wt, 'UniformOutput', false));
-                    [fig1,fig2] = hierarchical_plots(conf_mat_wt,[0,1],[1,1,1;0,0,0]);
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_wt_hierarchical_cluster'),'epsc');%_20cells
-                    close
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_wt_heatmaps'),'epsc');%_20cells
-                    close
-                    
-                    
-                    conf_mat_IkBo = cell2mat(cellfun(@(x) confusion_mat(x,RMSD_threshold), codon_single_cell_IkBo, 'UniformOutput', false));
-                    [fig1,fig2] = hierarchical_plots(conf_mat_IkBo,[0,1],[1,1,1;0,0,0]);
-                    
-                    fig2
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_IkBs_hierarchical_cluster'),'epsc');%_20cells
-                    close
-                    fig1
-                    saveas(gcf,strcat(savepath,'Confusion_pairs_IkBs_heatmaps'),'epsc');%_20cells
-                    close
-                end
-                
                 
             end
             
@@ -765,50 +447,18 @@ if 1 %draw 5 ligand single ligand stim
                     conf_mat_wt = conf_mat_wt(:,[1,2,4,3,5,7,9,6,8,10]);
                     conf_mat_IkBo = conf_mat_IkBo(:,[1,2,4,3,5,7,9,6,8,10]);
                     
-                    if 0
-                        [ax,fig] = plot_bar_conf(conf_mat_wt,size(conf_mat_wt,1),[]);
-                        if epsilon ==1
-                            ylim([0 0.3]);
-                            set(gca,'YTick',0:0.15:0.3)%'XTick',0:1:5,
-                        else
-                            ylim([0 1]);
-                            set(gca,'YTick',0:0.5:1)%'XTick',0:1:5,
-                        end
-                        saveas(gcf,strcat(fig_save_path,'SRS_conf_counts',vers_savefig,'_eps',num2str(epsilon)),'epsc')
-                        close
-                    end
-                    
-                    if 0 % not used to be deleted from publication
-                        conf_ligand_wt = sum(conf_mat_wt)/size(conf_mat_wt,1);
-                        conf_ligand_IkBo = sum(conf_mat_IkBo)/size(conf_mat_IkBo,1);
-                        
-                        figure(1)
-                        paperpos = [0,0,100,50]*2;
-                        papersize = [100,50]*2;
-                        draw_pos = [10,10,90,30]*2;
-                        set(gcf, 'PaperUnits','points')
-                        set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',draw_pos)
-                        bar([conf_ligand_wt;conf_ligand_IkBo]')
-                        
-                        ylim([0 0.25]);
-                        set(gca,'YTick',0:0.05:0.25)%'XTick',0:1:5,
-                        
-                        % Set x-axis tick labels to none
-                        xticklabels({});
-                        % Set y-axis tick labels to none
-                        yticklabels({});
-                        
-                        if epsilon ==1
-                            ylim([0 0.3]);
-                            set(gca,'YTick',0:0.15:0.3)%'XTick',0:1:5,
-                        else
-                            ylim([0 1]);
-                            set(gca,'YTick',0:0.5:1)%'XTick',0:1:5,
-                        end
-                        saveas(gcf,strcat(fig_save_path,'SRS_conf_counts_IkBo_wt_pairs_',vers_savefig,'_eps',num2str(epsilon)),'epsc')
-                        close
-                        
-                    end
+                    %                     if 1
+                    %                         [ax,fig] = plot_bar_conf(conf_mat_wt,size(conf_mat_wt,1),[]);
+                    %                         if epsilon ==1
+                    %                             ylim([0 0.3]);
+                    %                             set(gca,'YTick',0:0.15:0.3)%'XTick',0:1:5,
+                    %                         else
+                    %                             ylim([0 1]);
+                    %                             set(gca,'YTick',0:0.5:1)%'XTick',0:1:5,
+                    %                         end
+                    %                         saveas(gcf,strcat(fig_save_path,'SRS_conf_counts',vers_savefig,'_eps',num2str(epsilon)),'epsc')
+                    %                         close
+                    %                     end
                     
                     conf_score_wt = sum(conf_mat_wt,2);
                     conf_score_IkBo = sum(conf_mat_IkBo,2);
@@ -821,7 +471,7 @@ if 1 %draw 5 ligand single ligand stim
                     % epsilon
                     % barplot
                     
-                    if 0
+                    if 0 % Figure 7E: tested 05/15/2024
                         
                         figure(1)
                         paperpos = [0,0,80,50]*1.5;
@@ -829,8 +479,6 @@ if 1 %draw 5 ligand single ligand stim
                         draw_pos = [10,10,60,30]*1.5;
                         set(gcf, 'PaperUnits','points')
                         set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',draw_pos)
-                        
-                        
                         
                         bar(barplot(:,1))
                         %                         Y = barplot(:,1);
@@ -851,7 +499,7 @@ if 1 %draw 5 ligand single ligand stim
                         
                     end
                     
-                    if 0
+                    if 0 % Figure 7H: tested 05/15/2024
                         
                         figure(1)
                         paperpos = [0,0,80,50]*1.5;
@@ -863,7 +511,6 @@ if 1 %draw 5 ligand single ligand stim
                         bar(barplot(:,2));
                         %                         ba.BarWidth = 1.5;
                         %                         set(ba, 'BarWidth', 1.5); % Adjust this value as needed
-                        
                         
                         ylim([0,500])
                         set(gca,'YTick',[0,250,500])
@@ -889,7 +536,7 @@ if 1 %draw 5 ligand single ligand stim
     end
     
     %% draw heat map IkBo-/-
-    if 0
+    if 0 %Figure S7D: tested 05/15/2024
         clear data_NFkB
         cells_inteval = 50;
         
@@ -990,7 +637,7 @@ if 1 %draw 5 ligand single ligand stim
         
     end
     
-    if 0
+    if 0 %Figure S7C: tested 05/15/2024
         data_NFkB.info_ligand = data_IkBo.info_ligand;
         data_NFkB.info_dose_str = data_IkBo.info_dose_str;
         data_NFkB.info_dose_index = data_IkBo.info_dose_index;
@@ -1027,7 +674,7 @@ if 1 %draw 5 ligand single ligand stim
     end
     
     %% draw heat map wt
-    if 0
+    if 0 % Figure 7B: tested 05/15/2024
         clear data_NFkB
         cells_inteval = 50;
         ligand_index = [1,5,3,2,4]; % reoder the stim
@@ -1128,7 +775,7 @@ if 1 %draw 5 ligand single ligand stim
         
     end
     
-    if 0
+    if 0 %Figure S7A: tested 05/15/2024
         clear data_NFkB
         data_NFkB.info_ligand = data.info_ligand;
         data_NFkB.info_dose_str = data.info_dose_str;
@@ -1166,6 +813,8 @@ if 1 %draw 5 ligand single ligand stim
         
     end
     
+end
+
 end
 
 %%
@@ -1479,7 +1128,7 @@ fig3 = gcf;
 end
 
 %%
-function fig = draw_conf_mat(conf_mat,ligand_index)
+function fig = draw_conf_mat(conf_mat,ligand_index,caxis_num)
 conf_mat_plot = NaN(5,5);
 i_conf_mat = 1;
 
@@ -1507,7 +1156,11 @@ CustomXLabels = string(XLabels);
 CustomXLabels(:) = " ";
 h.XDisplayLabels = CustomXLabels;
 h.YDisplayLabels = CustomXLabels;
-caxis([0,20]);
+if nargin <3
+    caxis([0,20]);
+else
+    caxis(caxis_num);
+end
 colorbar off
 fig = gcf;
 end
@@ -1807,6 +1460,122 @@ set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',paperpos)
 if nargin <2
     h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',parula,'GridVisible','off','ColorLimits',[0,1]);%[-0.001,0.2] for TNF
 elseif nargin <3
+    h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',parula,'GridVisible','off','ColorLimits',color_limit);%[-0.001,0.2] for TNF
+else
+    h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',color_map,'GridVisible','off','ColorLimits',color_limit);%[-0.001,0.2] for TNF
+    
+end
+%
+XLabels = 1:size(reordered_traj_mat,2);
+% Convert each number in the array into a string
+CustomXLabels = string(XLabels/1);%conf_pairs
+% Replace all but the fifth elements by spaces
+% CustomXLabels(mod(XLabels,60) ~= 0) = " ";
+CustomXLabels(:) = " ";
+
+conf_pairs = conf_pairs(Outperm_col);
+
+
+CustomXLabels = string(conf_pairs);
+
+% Set the 'XDisplayLabels' property of the heatmap
+% object 'h' to the custom x-axis tick labels
+h.XDisplayLabels = CustomXLabels;
+
+YLabels = 1:size(traj_mat,1);
+% Convert each number in the array into a string
+YCustomXLabels = string(YLabels);
+% Replace all but the fifth elements by spaces
+YCustomXLabels(:) = " ";
+% Set the 'XDisplayLabels' property of the heatmap
+% object 'h' to the custom x-axis tick labels
+h.YDisplayLabels = YCustomXLabels;
+
+% xlabel('Time (hours)');
+% ylabel(vis_data_field{i_data_field});
+% clb=colorbar;
+% clb.Label.String = 'NFkB(A.U.)';
+colorbar('off')
+
+set(gca,'fontsize',14,'fontname','Arial');
+fig3 = gcf;
+
+
+end
+
+
+%%
+function [fig1,fig2,fig3,Outperm_col] = hierarchical_row_column_plot_diff_thresh_kw_0618(traj_mat,threshold,color_limit,color_map,conf_pairs,Outperm_col)
+
+traj_mat = traj_mat>threshold;
+
+figure(1)
+
+% Step 1: Perform hierarchical clustering on the rows
+Y = pdist(traj_mat, 'euclidean'); % Compute the pairwise distances between rows
+Z = linkage(Y, 'ward'); % Perform hierarchical/agglomerative clustering
+% Step 2: Determine the order of rows based on hierarchical clustering
+[H,T,Outperm] = dendrogram(Z, 0); % Get the order of rows for clustering
+close(gcf); % Close dendrogram figure
+
+% If you need to display the dendrogram alongside, you can plot it separately
+figure(1)
+paperpos=[0,0,55,70];
+papersize=[55 70];
+set(gcf, 'PaperUnits','points')
+set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',paperpos)
+
+[dendro_h,~,~] = dendrogram(Z,0, 'Orientation', 'left'); % Plotting dendrogram separately
+set(gca, 'XDir', 'reverse','YDir','reverse');
+set(dendro_h,'LineWidth',0.75,'Color','k'); % Adjust line width for better visibility
+xticklabels('')
+yticklabels('')
+axis off
+fig1 = gcf;
+
+figure(2)
+% Step 1: Perform hierarchical clustering on the rows
+Y_col = pdist(traj_mat', 'euclidean'); % Compute the pairwise distances between rows
+Z_col = linkage(Y_col, 'ward'); % Perform hierarchical/agglomerative clustering
+% Step 2: Determine the order of rows based on hierarchical clustering
+[H,T,Outperm_col0] = dendrogram(Z_col, 0); % Get the order of rows for clustering
+close(gcf); % Close dendrogram figure
+
+% If you need to display the dendrogram alongside, you can plot it separately
+figure(2)
+paperpos=[0,0,70,55];
+papersize=[70 55];
+set(gcf, 'PaperUnits','points')
+set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',paperpos)
+
+[dendro_h_col,~,~] = dendrogram(Z_col,0, 'Orientation', 'top'); % Plotting dendrogram separately
+% set(gca, 'XDir', 'reverse','YDir','reverse');
+set(dendro_h_col,'LineWidth',0.75,'Color','k'); % Adjust line width for better visibility
+xticklabels('')
+yticklabels('')
+axis off
+fig2 = gcf;
+
+if nargin <6
+    Outperm_col = Outperm_col0;
+end
+
+% Step 3: Reorder the matrix based on the clustering result
+reordered_traj_mat = traj_mat(Outperm, Outperm_col);
+
+
+
+figure(3)
+
+paperpos=[0,0,100,64]*3;
+papersize=[100,64]*3;
+set(gcf, 'PaperUnits','points')
+set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize,'Position',paperpos)
+
+% subplot(1,length(vis_data_field),i_data_field)
+if nargin <3
+    h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',parula,'GridVisible','off','ColorLimits',[0,1]);%[-0.001,0.2] for TNF
+elseif nargin <4
     h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',parula,'GridVisible','off','ColorLimits',color_limit);%[-0.001,0.2] for TNF
 else
     h=heatmap(double(reordered_traj_mat(:,:)),'ColorMap',color_map,'GridVisible','off','ColorLimits',color_limit);%[-0.001,0.2] for TNF

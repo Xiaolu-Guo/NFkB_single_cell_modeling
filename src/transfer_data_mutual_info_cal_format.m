@@ -1,9 +1,12 @@
-clear all
-load('mutual_info_cal_data_example.mat')
+function [] = transfer_data_mutual_info_cal_format(data_save_file_path,MI_file_save_path)
+% For Guo et al. Figure 5A, extended doses of each ligand simulated heatmaps
+% 
+% tested 05/15/2024, Matlab 2020a
+
+load('./example_data_format/mutual_info_cal_data_example.mat')
 
 %nfkb_eg = nfkb;
-data_save_file_path_1 = '../raw_data2023/';%_fay_parameter/';
-load(strcat(data_save_file_path_1,'All_codon_dual_ligand.mat'))
+load(strcat(data_save_file_path,'All_codon_dual_ligand.mat'))
 
 index_supriya = 1:5;
 index_ade = 6:10;
@@ -13,7 +16,7 @@ index_supriya_dual = 21:29;
 index_sampling_dual = [30:33,35:39];
 
 
-if 0    
+if 1   
     ligand_all = {'TNF','Pam3CSK','CpG', 'LPS','PolyIC'};
     codon_list = {'TotalActivity','Duration','EarlyVsLate','Speed','PeakAmplitude','OscVsNonOsc'};
     
@@ -32,34 +35,8 @@ if 0
                 nfkb(i_ligand).sc_metrics.(codon_list{i_codon}) = collect_feature_vects.(codon_list{i_codon}){index_data(i_ligand)};
             end
         end
-        save(strcat('mutual_info_format_single_ligand_',data_name{i_data_set},'.mat'),'nfkb')
+        save(strcat(MI_file_save_path,'mutual_info_format_single_ligand_',data_name{i_data_set},'.mat'),'nfkb')
         
     end
 end
 
-if 1
-    % Pam3CSK 100ng/mL CpG 100nM supriya: does not apply
-    ligand_all = {'TNF_Pam3CSK','TNF_CpG','TNF_LPS','TNF_PolyIC',...
-        'Pam3CSK_LPS','Pam3CSK_PolyIC',...
-        'CpG_LPS','CpG_PolyIC','LPS_PolyIC'};
-    codon_list = {'TotalActivity','Duration','EarlyVsLate','Speed','PeakAmplitude','OscVsNonOsc'};
-    
-    data_name = {'Supriya','Sampling'};
-    index_vec = {index_supriya_dual,index_sampling_dual};
-    
-    for i_data_set = 1:length(data_name)
-        index_data = index_vec{i_data_set};
-        
-        for i_ligand = 1:length(ligand_all)
-            nfkb(i_ligand).sc_metrics = struct();
-            
-            for i_codon =1:length(codon_list)
-                nfkb(i_ligand).id = ligand_all{i_ligand};
-                nfkb(i_ligand).ids = ligand_all;
-                nfkb(i_ligand).sc_metrics.(codon_list{i_codon}) = collect_feature_vects.(codon_list{i_codon}){index_data(i_ligand)};
-            end
-        end
-        save(strcat('mutual_info_format_dual_ligand_',data_name{i_data_set},'.mat'),'nfkb')
-        
-    end
-end
